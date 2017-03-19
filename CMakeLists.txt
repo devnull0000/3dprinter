@@ -17,7 +17,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mcpu=cortex-m7 -mthumb -O0 -ggdb -std=c99")
 set (SRC_FILES 
 startup.s 
 newlib-supp/newlib-supp.c
-linker_script.c
 src/main.c
 src/command.c
 src/motor.c

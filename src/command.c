@@ -36,7 +36,7 @@ static void cmdh_motor(struct cmd_t * const cmd)
     uint32_t const motorIdx = cmd->args[0];
     if (motorIdx < c_num_motors)
     {
-        struct cmd_state_t * newState = (cmd);
+        struct cmd_state_t * newState = motor_cmd_state_create(cmd);
         if (sMotorStates[motorIdx]) { //there is some command already... just replace it
          free(sMotorStates[motorIdx]);
         }
