@@ -1,3 +1,12 @@
-build/
+host-soft/build
+mcu-soft/build
 *.kate-swp
-.kdev4/
+mcu-soft/.kdev4
+host-soft/.kde4
+docs/
+pcb/
+sdk/
+st-link/
+symbols/
+/config.openocd
+/STM32F765ZGT6.txt
