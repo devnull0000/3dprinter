@@ -8,5 +8,4 @@ pcb/
 sdk/
 st-link/
 symbols/
-/config.openocd
 /STM32F765ZGT6.txt
