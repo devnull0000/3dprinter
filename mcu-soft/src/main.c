@@ -39,7 +39,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include <stdarg.h>
-//#include <>
+#include <command.h>
 
 /** @addtogroup STM32F7xx_HAL_Examples
   * @{
@@ -123,13 +123,16 @@ int main(void)
   USBD_Start(&USBD_Device);
   
   
-  /* -3- Toggle IO in an infinite loop */
+  cmd_enter_command_loop();
+  
+  /* -3- Toggle IO in an infinite loop 
   while (1)
   {
     HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_0);
-    /* Insert delay 100 ms */
+    // Insert delay 100 ms
     HAL_Delay(100);
   }
+  */
 }
 
 /**

@@ -2,7 +2,7 @@ host-soft/build
 mcu-soft/build
 *.kate-swp
 mcu-soft/.kdev4
-host-soft/.kde4
+host-soft/.kdev4
 docs/
 pcb/
 sdk/
