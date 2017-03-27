@@ -44,7 +44,9 @@ enum ECmd
     ,eCmd_MotorStop     //arg0: int motor_index;    arg1: bool immediately?;                          stops the motor, cmd_result gets eCmdStatus_Canceled status
   //,eCmd_MotorGoHome   //arg0: int motor_index;    arg1: unused            
                         //arg2: int max_speed  ;                                                      moves motor to its home (initial/zero) location
-  //,eCmd_Laser         //arg0: int turn_on    ;    arg1: power;                                      turns on/off laser. for turn_off power is ignored
+    ,eCmd_MotorTestPin  //arg0: select hex invertor (==0 - first, it will try to turn on PD1 (115) and show 0/+5V at MTR0_PUL pin)
+                        //arg1: turn pin on or off   == 1, it will turn on/off PD7, MT3_PUL
+  //,eCmd_Laser         //arg0: int turn_on    ;    arg1: power;                                      turns on/off laser. for turn_off power is ignored    
     ,eCmd_Last    
     ,eCmd_Force32BitSize = 0x7fffffff
 };

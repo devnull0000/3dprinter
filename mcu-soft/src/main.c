@@ -104,12 +104,34 @@ int main(void)
       GPIO_InitStruct.Pull  = GPIO_PULLUP;
       GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
       
-      GPIO_InitStruct.Pin = GPIO_PIN_0;
+      GPIO_InitStruct.Pin = GPIO_PIN_0;         //led2
       HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
-      GPIO_InitStruct.Pin = GPIO_PIN_15;
+      GPIO_InitStruct.Pin = GPIO_PIN_15;        //led1
       HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-  }
+      
+      GPIO_InitStruct.Pin = GPIO_PIN_1;
+      HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+      GPIO_InitStruct.Pin = GPIO_PIN_5;
+      HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+      GPIO_InitStruct.Pin = GPIO_PIN_6;
+      HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+      GPIO_InitStruct.Pin = GPIO_PIN_7;
+      HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+      GPIO_InitStruct.Pin = GPIO_PIN_8;
+      HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+      GPIO_InitStruct.Pin = GPIO_PIN_9;
+      HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+      GPIO_InitStruct.Pin = GPIO_PIN_10;
+      HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+      HAL_GPIO_WritePin(GPIOD, GPIO_PIN_5, GPIO_PIN_SET);
+      HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6, GPIO_PIN_SET);               
+      HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7, GPIO_PIN_SET);               
+      HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_SET);               
+      HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_SET);               
+      HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_SET);               
+  }
+  
     /* Init Device Library */
   USBD_Init(&USBD_Device, &VCP_Desc, 0);
   

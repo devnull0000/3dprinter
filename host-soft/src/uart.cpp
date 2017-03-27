@@ -133,5 +133,14 @@ void uart_write(void const * const data, int const size)
 
 int  uart_read(void * const buf, int const buf_size)
 {
-    return read(g_tty_fd, buf, buf_size);
+    ssize_t const ret = read(g_tty_fd, buf, buf_size);
+    if (ret == -1 && errno == EAGAIN)
+        return 0;
+    else {
+        if (ret == -1) {
+            fprintf(stderr, "uart_read, error: %d (%s)\n",  errno,  strerror (errno));
+            return 0;
+        }
+    }
+    return ret;
 }

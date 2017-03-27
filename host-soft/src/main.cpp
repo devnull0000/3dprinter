@@ -27,6 +27,7 @@ static bool exec_command(std::string const & line)
         std::string const scmd = ccmd;
         if (scmd == "mm") cmd.cmd = eCmd_MotorMove;        
         else if (scmd == "ms") cmd.cmd = eCmd_MotorStop;        
+        else if (scmd == "mt") cmd.cmd = eCmd_MotorTestPin;
         else if (scmd == "l") cmd.cmd = eCmd_Led;        
         else if (scmd == "r") cmd.cmd = eCmd_MCUReset;        
         else {
@@ -94,7 +95,7 @@ int main(int const argc, char const * argv[])
                 char * cline = readline("3dprinter>");
                 if (!cline)
                 {
-                    fprintf(stderr, "EOF gotten, exiting...");
+                    fprintf(stderr, "EOF gotten, exiting...\n");
                     break;
                 }
                 line = cline;

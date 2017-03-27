@@ -33,6 +33,17 @@ static void cmdh_led(struct cmd_t * const cmd)
     send_cmd_result(cmd, eCmdStatus_Ok);
 }
 
+static void cmdh_test_motor_pin(struct cmd_t * const cmd)
+{        
+    //YS: we have hex inverters there so if we want to turn motor +5V pin on, we should reset (send logical 0 there)
+    //and vice versa
+    if (cmd->args[0] == 0)
+        HAL_GPIO_WritePin(GPIOD, GPIO_PIN_1, cmd->args[1] ? GPIO_PIN_RESET : GPIO_PIN_SET);         
+    else
+        HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7, cmd->args[1] ? GPIO_PIN_RESET : GPIO_PIN_SET);         
+    send_cmd_result(cmd, eCmdStatus_Ok);
+}
+
 static void cmdh_motor(struct cmd_t * const cmd)
 {
     uint32_t const motorIdx = cmd->args[0];
@@ -43,7 +54,7 @@ static void cmdh_motor(struct cmd_t * const cmd)
          free(sMotorStates[motorIdx]);
         }
         sMotorStates[motorIdx] = newState;                        
-        send_cmd_result(cmd, eCmdStatus_Ok);
+        //send_cmd_result(cmd, eCmdStatus_Pending);
     }
     else
         send_cmd_result(cmd, eCmdStatus_Failed);
@@ -56,7 +67,8 @@ static void process_command(struct cmd_t * const cmd)
         switch(cmd->cmd)
         {
             case eCmd_MCUReset: NVIC_SystemReset(); break;      //actually we won't return from here...
-            case eCmd_Led: cmdh_led(cmd); break;            
+            case eCmd_Led: cmdh_led(cmd); break;   
+            case eCmd_MotorTestPin: cmdh_test_motor_pin(cmd); break;
             case eCmd_MotorMove:
           //case eCmd_MotorGoHome: 
                 cmdh_motor(cmd); 
@@ -70,46 +82,42 @@ static void process_command(struct cmd_t * const cmd)
 
 static int take_command(struct cmd_t * ocmd, struct cmd_ring_buffer_t * const rb)
 {
-    uint32_t const end = rb->read_ptr + sizeof(struct cmd_t)/sizeof(int32_t);
-    uint32_t const rend = end % c_buf_int_size;
-    if (rend > rb->write_ptr)
+    uint32_t const end = rb->read_ptr + sizeof(struct cmd_t)/sizeof(int32_t);    
+    if ((int32_t)(end - rb->write_ptr) > 0)
         return 0;       //just not enough data...
     
     if (end > c_buf_int_size) {
         //take two parts
-        uint32_t const part1_length = c_buf_int_size - rb->read_ptr;
+        uint32_t const part1_length = c_buf_int_size - rb->read_ptr%c_buf_int_size;
         uint32_t const part2_length = sizeof(struct cmd_t)/sizeof(int32_t) - part1_length;
-        memcpy(ocmd, &rb->buf[rb->read_ptr], part1_length * sizeof(int32_t));
+        memcpy(ocmd, &rb->buf[rb->read_ptr%c_buf_int_size], part1_length * sizeof(int32_t));
         memcpy((int32_t*)ocmd + part1_length, rb->buf, part2_length * sizeof(int32_t));
     }
     else { //only part, just copy...
         *ocmd = *(struct cmd_t *)&(rb->buf[rb->read_ptr]);
     }        
-    rb->read_ptr = rend;        
+    rb->read_ptr = end;        
     return 1;
 }
 
 void cmd_data_arrived(uint8_t const * const data, int const length)
 {
-        if (length%sizeof(uint32_t) != 0)
+    if (length%sizeof(uint32_t) != 0)
         main_fail_with_error("CDC_Itf_Receive: length is not aligned by 4");
     
     int intLen = length / sizeof(uint32_t);
-    if (intLen <= c_buf_int_size)
-    {
-        if (sCmdBuf.write_ptr + length <= c_buf_int_size)
-        {
-            memcpy(sCmdBuf.buf + sCmdBuf.write_ptr, data, length);
-            sCmdBuf.write_ptr += intLen;
+    if (intLen <= c_buf_int_size) {
+        if (sCmdBuf.write_ptr%c_buf_int_size + length <= c_buf_int_size) {
+            memcpy(sCmdBuf.buf + sCmdBuf.write_ptr%c_buf_int_size, data, length);            
         }
-        else
-        {   //divide to two ports
+        else {   //divide to two ports
             int const p0 = c_buf_int_size - sCmdBuf.write_ptr;
             int const p2 = intLen - p0;
-            memcpy(sCmdBuf.buf + sCmdBuf.write_ptr, data, p0 * sizeof(uint32_t));
+            memcpy(sCmdBuf.buf + sCmdBuf.write_ptr%c_buf_int_size, data, p0 * sizeof(uint32_t));
             memcpy(sCmdBuf.buf, &data[p0 * sizeof(uint32_t)], p2 * sizeof(uint32_t));
-            sCmdBuf.write_ptr = p2;            
+            //sCmdBuf.write_ptr = p2;            
         }        
+        sCmdBuf.write_ptr += intLen;
     }
     else
         main_fail_with_error("CDC_Itf_Receive: too long packet...");        //you can try to copy sizeof(cmd_t) from *Len and call command.h command_process_ring_buffer
@@ -132,13 +140,21 @@ void cmd_iterate_command_loop()
     {
         struct cmd_state_t * const s = sMotorStates[i];
         if (s)
-            s->proc_fn(s);
+        {
+            enum ECmdStatus status = s->proc_fn(s);
+            if (status != eCmdStatus_Pending)
+            {   //i.e. the command done (either okay or failed, we don't care just tell about this...)
+                send_cmd_result(&s->cmd, status);
+                free(s);
+                sMotorStates[i] = 0;                
+            }            
+        }
     }
 }
 
 void cmd_enter_command_loop()
 {
     while(1)
-        cmd_iterate_command_loop();
+        cmd_iterate_command_loop();                      
 }
 

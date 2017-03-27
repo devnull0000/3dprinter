@@ -273,7 +273,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 void usbd_cdc_interface_transmit_data(void * const data, int len)
 {
-    
+    USBD_CDC_SetTxBuffer(&USBD_Device, data, len);
+    while (USBD_CDC_TransmitPacket(&USBD_Device) != USBD_OK);       //wait for transmission
 }
 
 /**
@@ -287,6 +288,7 @@ void usbd_cdc_interface_transmit_data(void * const data, int len)
 static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len)
 {  
     cmd_data_arrived(Buf, *Len);
+    USBD_CDC_ReceivePacket(&USBD_Device);       //we are ready to get more
     return (USBD_OK);
 }
 

@@ -66,5 +66,8 @@ struct cmd_state_t * motor_cmd_state_create(struct cmd_t * const cmd)
     ret->cpu_cntr = main_get_cpu_ticks();
     ret->max_ccps_speed = (cpu_freq / max_speed) * 100;
     
+    struct motor_t const * const m = &cMotors[cmd->args[0]];
+    HAL_GPIO_WritePin(m->dir_group, m->dir_pin, ret->dir == 1 ? GPIO_PIN_SET : GPIO_PIN_RESET);     
+    
     return (struct cmd_state_t *)ret;
 }
