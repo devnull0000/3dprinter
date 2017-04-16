@@ -43,6 +43,26 @@ static bool exec_command(std::string const & line)
 static std::atomic<bool> sCanStart{false};
 static std::atomic<bool> sShouldStop{false};
 
+//with sShouldStop support
+static int uart_sync_read(void * buf, int expected)
+{
+    int already_read = 0;
+    char * cbuf = (char*)buf;
+    while (!sShouldStop)
+    {
+        int wasRead = uart_read(cbuf + already_read, expected);
+        if (already_read + wasRead >= expected)
+            break;
+        else
+        {
+            already_read += wasRead;
+        }            
+    }    
+    if (sShouldStop)
+        throw std::runtime_error("uart_sync_read - exit requested (sShouldStop is set)");
+    return expected;
+}
+
 static void response_thread()
 {
     while (!sCanStart && !sShouldStop);
@@ -51,18 +71,39 @@ static void response_thread()
     {
         while (!sShouldStop)
         {
-            cmd_result_t cr;
-            int remainToRead = sizeof cr;
+            struct cmd_printer_event_t pe;
+            char msg_buf[2048]; //big enough...
+            msg_buf[0] = 0; //for insurance..
             
-            int wasRead = uart_read(&cr, remainToRead);
-            remainToRead -= wasRead;
             
-            if (!remainToRead)
+            //cmd_result_t cr;
+            int wasRead = uart_sync_read(&pe, sizeof(pe));
+            if (wasRead != sizeof(pe))
+                fprintf(stderr, "partial event arrived, shit will happen..\n");
+            
+            if (pe.msg_num_bytes)
             {
-                printf("command_result status: %d cmd_id: %d\n", cr.status, cr.cmd_id);
+                if(pe.msg_num_bytes >= 1900)                    
+                    fprintf(stderr, "too long message pe.msg_num_bytes: %d, shit will happen..\n", pe.msg_num_bytes);
                 
-                remainToRead = sizeof cr;
+                wasRead = uart_sync_read(msg_buf, pe.msg_num_bytes);
+                if (wasRead != pe.msg_num_bytes)
+                    fprintf(stderr, "partial message in event arrived, shit will happen..\n");
+                msg_buf[pe.msg_num_bytes] = 0; //force string to be null terminated
             }
+            
+            if (pe.event_type == ePrinterEventType_CmdResult)            
+                printf("\ncommand_result status: %d cmd_id: %d\n", pe.cmd_result.status, pe.cmd_result.cmd_id);                                
+            else
+            {
+                if (pe.event_type == ePrinterEventType_Err)
+                    fprintf(stderr, "printer error: %s", msg_buf);
+                else if (pe.event_type == ePrinterEventType_Msg)
+                    printf("printer message: %s", msg_buf);
+                else
+                    fprintf(stderr, "host parser error: unknown EPrinterEventType: %d", pe.event_type);
+
+            }            
         }
     } catch (std::exception const & ex)
     {

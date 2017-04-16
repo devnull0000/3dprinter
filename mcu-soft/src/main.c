@@ -95,13 +95,14 @@ int main(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
   {
       GPIO_InitTypeDef  GPIO_InitStruct;
       /* -2- Configure IO in output push-pull mode to drive external LEDs */
       GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
-      GPIO_InitStruct.Pull  = GPIO_PULLUP;
+      GPIO_InitStruct.Pull  = GPIO_NOPULL;
       GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
       
       GPIO_InitStruct.Pin = GPIO_PIN_0;         //led2
@@ -130,6 +131,22 @@ int main(void)
       HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_SET);               
       HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_SET);               
       HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_SET);               
+  }
+  
+  //inputs (for sensors)
+  {
+      GPIO_InitTypeDef  GPIO_InitStruct;
+      /* -2- Configure IO in output push-pull mode to drive external LEDs */
+      GPIO_InitStruct.Mode  = GPIO_MODE_INPUT;
+      GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW; //GPIO_SPEED_FREQ_VERY_HIGH;
+      
+      GPIO_InitStruct.Pin = GPIO_PIN_0;         //U13, pin6 - input laser sensor #1 (X axis, blue)
+      HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+      GPIO_InitStruct.Pin = GPIO_PIN_1;         //U13, pin5 - input laser sensor #2 (Y axis, green)
+      HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+      GPIO_InitStruct.Pin = GPIO_PIN_2;         //U13, pin4 - input laser sensor #3 (Z axis, yellow)
+      HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);      
   }
   
     /* Init Device Library */
@@ -279,7 +296,7 @@ void main_fail_with_error(char * fmt, ...)
 {
      va_list vl;
      va_start(vl, fmt);
-     vprintf(fmt, vl);      //see newlib-supp/newlib-supp.c, write function
+     vfprintf(stderr /*STDERR_FILENO*/, fmt, vl);      //see newlib-supp/newlib-supp.c, write function
      va_end(vl);
     
     while(1)

@@ -4,7 +4,7 @@
 struct cmd_t;
 struct cmd_state_t;
 
-enum {c_num_motors = 4};        //0 & 1 are paired x-direction motors
+enum {c_num_motors = 3};        //0 & 1 are paired x-direction motors
 
 struct motor_t
 {
@@ -12,6 +12,11 @@ struct motor_t
     int             pulse_pin;
     GPIO_TypeDef *  dir_group;
     int             dir_pin;    
+    
+    GPIO_TypeDef *  stop_group;     //sensor stop pin group
+    int             stop_pin;
+    int             stop_pin_dir;   //stop will stop motor only if current motor move direction (see motor_cmd_state_t::dir) is stop_pin_dir
+                                    //this will allow motor to leave blind zero point
 };
 
 

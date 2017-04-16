@@ -3,6 +3,7 @@
 #include <unistd.h>
 /*#include <time.h>*/
 #include <sys/times.h>
+#include "command.h"    //YS: it's ours! for enum visibility...
 
 #undef errno
 extern int errno;
@@ -73,10 +74,10 @@ void * _sbrk(ptrdiff_t incr) {
     heap_end = &_end;
   }
   prev_heap_end = heap_end;
-  /*if (heap_end + incr > stack_ptr) {
+  if (heap_end + incr >= (char *)&incr) {
     write (1, "Heap and stack collision\n", 25);
-    abort ();
-  }*/
+    while(1);
+  }
 
   heap_end += incr;
   return (void *) prev_heap_end;
@@ -101,10 +102,10 @@ int _wait(int *status) {
   return -1;
 }
 
+//void cmd_send_message_to_host(enum EPrinterEventType type, char const * msg);
 int _write(int file, void const *ptr, size_t len) {
-//  int todo;
-//  for (todo = 0; todo < len; todo++) {
-//    outbyte (*ptr++);
-//  }
-  return len;
+    enum EPrinterEventType type = (file == 1 ? ePrinterEventType_Msg : ePrinterEventType_Err);
+    cmd_send_message_to_host(type, ptr, (int)len);
+    
+    return len;
 }

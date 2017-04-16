@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.7.0)
 project (mcu-soft C)
 enable_language(ASM)
 
-add_definitions(-DSTM32F765xx -DUSE_USB_FS) # -DMISSING_SYSCALL_NAMES -DREENTRANT_SYSCALLS_PROVIDED)
+add_definitions(-DSTM32F765xx -DUSE_USB_FS -DUSE_FULL_ASSERT) # -DMISSING_SYSCALL_NAMES -DREENTRANT_SYSCALLS_PROVIDED)
 include_directories (
 src 
 CMSIS/Include
