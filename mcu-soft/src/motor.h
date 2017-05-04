@@ -4,8 +4,6 @@
 struct cmd_t;
 struct cmd_state_t;
 
-enum {c_num_motors = 3};        //0 & 1 are paired x-direction motors
-
 struct motor_t
 {
     GPIO_TypeDef *  pulse_group;

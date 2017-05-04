@@ -52,8 +52,9 @@ enum ECmd
     ,eCmd_Force32BitSize = 0x7fffffff
 };
 
-
 enum {c_max_args = 4};
+enum {c_num_motors = 3};        //physical 0 & 1 are paired x-direction motors; n3 physical is 2 logical so on
+
 struct cmd_t
 {
     enum ECmd   cmd;

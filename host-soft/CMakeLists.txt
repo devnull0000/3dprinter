@@ -5,6 +5,7 @@ project (printctl)
 
 include_directories (
 src/
+gcode/
 ../
 )
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
@@ -13,6 +14,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 set (SRC_FILES 
 src/main.cpp
 src/uart.cpp
+gcode/parser.cpp
+gcode/gcpu.cpp
 )
 
 add_executable (${PROJECT_NAME}.elf ${SRC_FILES}) 
