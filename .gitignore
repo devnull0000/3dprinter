@@ -1,5 +1,8 @@
 host-soft/build
+host-soft/cmake-build-*
 mcu-soft/build
+mcu-soft/cmake-build-*
+.idea
 *.kate-swp
 mcu-soft/.kdev4
 host-soft/.kdev4
